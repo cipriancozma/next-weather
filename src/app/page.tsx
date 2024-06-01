@@ -2,10 +2,11 @@
 
 import Container from "@/components/Container";
 import Navbar from "@/components/Navbar";
+import WeatherDetails, { WeatherDetailType } from "@/components/WeatherDetails";
 import { WeatherIcon } from "@/components/WeatherIcon";
 import { convertKelvinToCelsius } from "@/utils/convertKelvinToCelcius";
 import axios from "axios";
-import { format, parseISO } from "date-fns";
+import { format, fromUnixTime, parseISO } from "date-fns";
 import { useQuery } from "react-query";
 
 export default function Home() {
@@ -25,6 +26,22 @@ export default function Home() {
   }
 
   const dayDate = data?.list[0];
+  const city = data?.city;
+
+  const weatherDetails = {
+    [WeatherDetailType.VISIBILITY]: `${dayDate?.visibility / 1000} km`,
+    [WeatherDetailType.HUMIDITY]: `${dayDate?.main?.humidity}%`,
+    [WeatherDetailType.WIND_SPEED]: `${dayDate?.wind?.speed} m/s`,
+    [WeatherDetailType.AIR_PRESSURE]: `${dayDate?.main?.pressure} hPa`,
+    [WeatherDetailType.SUNRISE]: `${format(
+      fromUnixTime(city?.sunrise ?? 1717208269),
+      "H:mm"
+    )}`,
+    [WeatherDetailType.SUNSET]: `${format(
+      fromUnixTime(city?.sunset ?? 1717264648),
+      "H:mm"
+    )}`,
+  };
 
   console.log(data);
   return (
@@ -74,8 +91,21 @@ export default function Home() {
               </div>
             </Container>
           </div>
+          <div className="flex gap-4">
+            <Container className="w-fit justify-center flex-col px-4 items-center">
+              <p className="capitalize text-center">
+                {dayDate?.weather[0]?.description}
+              </p>
+              <WeatherIcon iconName={dayDate?.weather[0]?.icon ?? ""} />
+            </Container>
+            <Container className="bg-yellow-300/80 px-6 gap-4 justify-between overflow-x-auto">
+              <WeatherDetails details={weatherDetails} />
+            </Container>
+          </div>
         </section>
-        <section></section>
+        <section className="flex w-full flex-col gap-4">
+          <p className="text-2xl">7 days Forecast</p>
+        </section>
       </main>
     </div>
   );
