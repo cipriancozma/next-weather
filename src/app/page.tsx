@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import WeatherDetails, { WeatherDetailType } from "@/components/WeatherDetails";
 import { WeatherIcon } from "@/components/WeatherIcon";
 import { convertKelvinToCelsius } from "@/utils/convertKelvinToCelcius";
+import { convertWindSpeed } from "@/utils/convertWindSpeed";
 import axios from "axios";
 import { format, fromUnixTime, parseISO } from "date-fns";
 import { useQuery } from "react-query";
@@ -31,7 +32,9 @@ export default function Home() {
   const weatherDetails = {
     [WeatherDetailType.VISIBILITY]: `${dayDate?.visibility / 1000} km`,
     [WeatherDetailType.HUMIDITY]: `${dayDate?.main?.humidity}%`,
-    [WeatherDetailType.WIND_SPEED]: `${dayDate?.wind?.speed} m/s`,
+    [WeatherDetailType.WIND_SPEED]: `${convertWindSpeed(
+      dayDate?.wind?.speed ?? 1.6
+    )}`,
     [WeatherDetailType.AIR_PRESSURE]: `${dayDate?.main?.pressure} hPa`,
     [WeatherDetailType.SUNRISE]: `${format(
       fromUnixTime(city?.sunrise ?? 1717208269),
