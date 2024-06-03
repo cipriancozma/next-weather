@@ -1,6 +1,7 @@
 "use client";
 
 import Container from "@/components/Container";
+import ForecastWeatherDetails from "@/components/ForecastWeatherDetails";
 import Navbar from "@/components/Navbar";
 import WeatherDetails, { WeatherDetailType } from "@/components/WeatherDetails";
 import { WeatherIcon } from "@/components/WeatherIcon";
@@ -29,7 +30,23 @@ export default function Home() {
   const dayDate = data?.list[0];
   const city = data?.city;
 
-  const weatherDetails = {
+  const uniqueDates = [
+    ...new Set(
+      data?.list.map(
+        (entry: any) => new Date(entry.dt * 1000).toISOString().split("T")[0]
+      )
+    ),
+  ];
+
+  const firstInfoForEachDate = uniqueDates.map((date) => {
+    return data?.list.find((entry: any) => {
+      const entryDate = new Date(entry.dt * 1000).toISOString().split("T")[0];
+      const entryTime = new Date(entry.dt * 1000).getHours();
+      return entryDate === date && entryTime >= 6;
+    });
+  });
+
+  const formatWeatherDetails = (dayDate: any) => ({
     [WeatherDetailType.VISIBILITY]: `${dayDate?.visibility / 1000} km`,
     [WeatherDetailType.HUMIDITY]: `${dayDate?.main?.humidity}%`,
     [WeatherDetailType.WIND_SPEED]: `${convertWindSpeed(
@@ -44,7 +61,7 @@ export default function Home() {
       fromUnixTime(city?.sunset ?? 1717264648),
       "H:mm"
     )}`,
-  };
+  });
 
   console.log(data);
   return (
@@ -102,12 +119,26 @@ export default function Home() {
               <WeatherIcon iconName={dayDate?.weather[0]?.icon ?? ""} />
             </Container>
             <Container className="bg-yellow-300/80 px-6 gap-4 justify-between overflow-x-auto">
-              <WeatherDetails details={weatherDetails} />
+              <WeatherDetails details={formatWeatherDetails(dayDate)} />
             </Container>
           </div>
         </section>
         <section className="flex w-full flex-col gap-4">
           <p className="text-2xl">7 days Forecast</p>
+          {firstInfoForEachDate.map((d, i) => (
+            <ForecastWeatherDetails
+              key={i}
+              description={d?.weather[0].description ?? ""}
+              weatherIcon={d?.weather[0].icon ?? "01d"}
+              date={format(parseISO(d?.dt_txt ?? ""), "dd.MM")}
+              day={format(parseISO(d?.dt_txt ?? ""), "EEEE")}
+              feels_like={d?.main.feels_like ?? 0}
+              temp={d?.main.temp ?? 0}
+              min_temp={d?.main.temp_min ?? 0}
+              max_temp={d?.main.temp_max ?? 0}
+              details={formatWeatherDetails(d)}
+            />
+          ))}
         </section>
       </main>
     </div>
