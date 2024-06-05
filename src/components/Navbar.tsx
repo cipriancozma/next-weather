@@ -6,14 +6,18 @@ import { TbLocation } from "react-icons/tb";
 import { TiWeatherPartlySunny } from "react-icons/ti";
 import SearchBar from "./SearchBar";
 import axios from "axios";
+import { useAtom } from "jotai";
+import { placeAtom } from "@/app/atom";
 
-type Props = {};
+type Props = { location?: string };
 
-export default function Navbar({}: Props) {
+export default function Navbar({ location }: Props) {
   const [city, setCity] = useState("");
   const [error, setError] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const [place, setPlace] = useAtom(placeAtom);
 
   const handleChange = async (value: string) => {
     setCity(value);
@@ -47,6 +51,7 @@ export default function Navbar({}: Props) {
       setError("Location not found...");
     } else {
       setError("");
+      setPlace(city);
       setShowSuggestions(false);
     }
   };
@@ -61,7 +66,7 @@ export default function Navbar({}: Props) {
         <section className="flex gap-2 items-center justify-end">
           <IoLocationOutline className="text-2xl text-gray-400 hover:opacity-80 cursor-pointer" />
           <TbLocation className="text-2xl text-gray-400" />
-          <p className="text-slate-900/80 text-sm">Romania</p>
+          <p className="text-slate-900/80 text-sm">{location}</p>
           <div className="relative">
             <SearchBar
               value={city}

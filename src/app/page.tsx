@@ -9,15 +9,23 @@ import { convertKelvinToCelsius } from "@/utils/convertKelvinToCelcius";
 import { convertWindSpeed } from "@/utils/convertWindSpeed";
 import axios from "axios";
 import { format, fromUnixTime, parseISO } from "date-fns";
+import { useAtom } from "jotai";
 import { useQuery } from "react-query";
+import { placeAtom } from "./atom";
+import { useEffect } from "react";
 
 export default function Home() {
-  const { isLoading, error, data } = useQuery("weatherData", async () => {
-    const { data } = await axios.get(
-      `https://api.openweathermap.org/data/2.5/forecast?q=iasi&appid=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&cnt=56`
-    );
-    return data;
-  });
+  const [place, setPlace] = useAtom(placeAtom);
+
+  const { isLoading, error, data, refetch } = useQuery(
+    "weatherData",
+    async () => {
+      const { data } = await axios.get(
+        `https://api.openweathermap.org/data/2.5/forecast?q=${place}&appid=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&cnt=56`
+      );
+      return data;
+    }
+  );
 
   if (isLoading) {
     return (
@@ -26,6 +34,10 @@ export default function Home() {
       </div>
     );
   }
+
+  useEffect(() => {
+    refetch();
+  }, [place, refetch]);
 
   const dayDate = data?.list[0];
   const city = data?.city;
@@ -63,10 +75,9 @@ export default function Home() {
     )}`,
   });
 
-  console.log(data);
   return (
     <div className="flex flex-col gap-4 bg-gray-100 min-h-screen">
-      <Navbar />
+      <Navbar location={city?.name} />
       <main className="px-3 max-w-7xl mx-auto flex flex-col gap-9 w-full pb-10 pt-4">
         <section className="space-y-4">
           <div className="space-y-2">
